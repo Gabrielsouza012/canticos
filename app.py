@@ -21,7 +21,7 @@ def download_video(url):
         'allsubtitles': True,
         'subtitles': 'auto',
         'skip_download': False,
-        'cookiesfromfile': 'cookies.txt',  # 👈 Aqui usa os cookies
+        'cookiefile': 'cookies.txt',  # 👈 Correção aqui: agora é cookiefile!
     }
     
     with yt_dlp.YoutubeDL(options) as ydl:

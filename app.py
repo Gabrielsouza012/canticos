@@ -15,13 +15,13 @@ def download_video(url, quality):
     
     options = {
         'outtmpl': output_template,
-        'format': quality,  # 👈 Agora usando a qualidade escolhida
+        'format': quality,  # 👈 Usa a qualidade que o usuário escolheu
         'writesubtitles': True,
         'subtitleslangs': ['pt', 'en'],
         'allsubtitles': True,
         'subtitles': 'auto',
         'skip_download': False,
-        'cookiefile': 'cookies.txt',  # 👈 Garantindo login via cookies
+        'cookiefile': 'cookies.txt',  # 👈 Usa cookies para pegar vídeos privados
     }
     
     with yt_dlp.YoutubeDL(options) as ydl:
@@ -36,4 +36,20 @@ def download_video(url, quality):
 
 @app.route('/')
 def index():
-    return render_templ_
+    return render_template('index.html')
+
+@app.route('/download', methods=['POST'])
+def download():
+    url = request.form['video_urls'].strip()
+    quality = request.form.get('quality', 'best')  # 👈 pega a escolha de resolução do formulário
+    
+    if not url:
+        return "Nenhum link enviado."
+    
+    video_path = download_video(url, quality)
+    
+    return send_file(video_path, as_attachment=True)
+
+if __name__ == "__main__":
+    port = int(os.environ.get('PORT', 5000))  # 👈 pega a porta do Render automaticamente
+    app.run(host='0.0.0.0', port=port)         # 👈 deixa público para a internet

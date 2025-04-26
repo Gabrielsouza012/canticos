@@ -1,16 +1,81 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Downloader de Vídeos</title>
-</head>
-<body>
-    <h1>Baixe vídeos do YouTube</h1>
-    <form action="/download" method="POST">
-        <label for="video_urls">Insira os links dos vídeos:</label><br>
-        <textarea name="video_urls" id="video_urls" rows="10" cols="50" placeholder="Insira um link por linha"></textarea><br>
-        <button type="submit">Baixar Vídeos</button>
-    </form>
-</body>
-</html>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Baixador de Vídeos do YouTube</title>
+  <style>
+    body {
+      background-color: #f5f0ff;
+      font-family: 'Arial', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .container {
+      background: #f3eaff;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      width: 90%;
+      max-width: 600px;
+    }
+    h1 {
+      color: #7e3af2;
+      margin-bottom: 10px;
+    }
+    p {
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 16px;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+    }
+    .form-container {
+      display: flex;
+      background: white;
+      border-radius: 50px;
+      overflow: hidden;
+      box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.05);
+      width: 100%;
+    }
+    .form-container input[type="text"] {
+      border: none;
+      padding: 15px 20px;
+      flex: 1;
+      font-size: 16px;
+      outline: none;
+    }
+    .form-container button {
+      background: #7e3af2;
+      color: white;
+      border: none;
+      padding: 0 30px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background 0.3s;
+    }
+    .form-container button:hover {
+      background: #6c2bd9;
+    }
+    select {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      outline: none;
+    }
+    .terms {
+      margin-top: 15px;
+      font-size: 12px;
+      color: #777;
+    }
+    .

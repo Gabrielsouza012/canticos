@@ -1,14 +1,20 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, send_file
 import yt_dlp
 import os
+import uuid
 
 app = Flask(__name__)
 
-# Função para fazer o download
-def download_videos(video_urls):
+# Pasta temporária para salvar vídeos
+DOWNLOAD_FOLDER = "downloads"
+os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
+
+def download_video(url):
+    unique_filename = str(uuid.uuid4())  # gera nome único
+    output_template = os.path.join(DOWNLOAD_FOLDER, f"{unique_filename}.%(ext)s")
+    
     options = {
-        'outtmpl': 'downloads/%(title)s.%(ext)s',
-        'noplaylist': True,
+        'outtmpl': output_template,
         'format': 'mp4',
         'writesubtitles': True,
         'subtitleslangs': ['pt', 'en'],
@@ -16,26 +22,32 @@ def download_videos(video_urls):
         'subtitles': 'auto',
         'skip_download': False,
     }
+    
+    with yt_dlp.YoutubeDL(options) as ydl:
+        info = ydl.extract_info(url, download=True)
+        downloaded_filename = ydl.prepare_filename(info)
+        
+        # Corrige se o arquivo baixado tiver extensão diferente
+        if not downloaded_filename.endswith(".mp4"):
+            base = os.path.splitext(downloaded_filename)[0]
+            downloaded_filename = base + ".mp4"
+        
+    return downloaded_filename
 
-    try:
-        with yt_dlp.YoutubeDL(options) as ydl:
-            for url in video_urls:
-                ydl.download([url])
-        return "Todos os downloads foram concluídos!"
-    except Exception as e:
-        return f"Erro ao baixar os vídeos e legendas: {e}"
-
-# Página principal
 @app.route('/')
 def index():
     return render_template('index.html')
 
-# Rota para processar os downloads
 @app.route('/download', methods=['POST'])
 def download():
-    video_urls = request.form['video_urls'].splitlines()
-    result = download_videos(video_urls)
-    return result
+    url = request.form['video_urls'].strip()
+    
+    if not url:
+        return "Nenhum link enviado."
+    
+    video_path = download_video(url)
+    
+    return send_file(video_path, as_attachment=True)
 
 if __name__ == "__main__":
     app.run(debug=True)

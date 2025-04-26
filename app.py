@@ -14,6 +14,7 @@ def download_video(url):
     output_template = os.path.join(DOWNLOAD_FOLDER, f"{unique_filename}.%(ext)s")
     
     options = {
+<<<<<<< HEAD
     'outtmpl': output_template,
     'format': 'mp4',
     'writesubtitles': True,
@@ -23,6 +24,16 @@ def download_video(url):
     'skip_download': False,
     'cookiesfromfile': 'cookies.txt',  # 👈 ESSA LINHA GARANTE O USO DOS COOKIES
 }
+=======
+        'outtmpl': output_template,
+        'format': 'mp4',
+        'writesubtitles': True,
+        'subtitleslangs': ['pt', 'en'],
+        'allsubtitles': True,
+        'subtitles': 'auto',
+        'skip_download': False,
+    }
+>>>>>>> 15365d34b988e4acc57c63dc358d1d2acd88af96
     
     with yt_dlp.YoutubeDL(options) as ydl:
         info = ydl.extract_info(url, download=True)

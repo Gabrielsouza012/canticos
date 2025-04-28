@@ -14,17 +14,6 @@ def download_video(url):
     output_template = os.path.join(DOWNLOAD_FOLDER, f"{unique_filename}.%(ext)s")
     
     options = {
-<<<<<<< HEAD
-    'outtmpl': output_template,
-    'format': 'mp4',
-    'writesubtitles': True,
-    'subtitleslangs': ['pt', 'en'],
-    'allsubtitles': True,
-    'subtitles': 'auto',
-    'skip_download': False,
-    'cookiesfromfile': 'cookies.txt',  # 👈 ESSA LINHA GARANTE O USO DOS COOKIES
-}
-=======
         'outtmpl': output_template,
         'format': 'mp4',
         'writesubtitles': True,
@@ -32,8 +21,8 @@ def download_video(url):
         'allsubtitles': True,
         'subtitles': 'auto',
         'skip_download': False,
+        'cookiefile': 'cookies.txt',  # 👈 Correção aqui: agora é cookiefile!
     }
->>>>>>> 15365d34b988e4acc57c63dc358d1d2acd88af96
     
     with yt_dlp.YoutubeDL(options) as ydl:
         info = ydl.extract_info(url, download=True)
@@ -62,7 +51,5 @@ def download():
     return send_file(video_path, as_attachment=True)
 
 if __name__ == "__main__":
-    import os
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
-

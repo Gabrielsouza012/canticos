@@ -8,6 +8,7 @@ import subprocess
 
 app = Flask(__name__)
 
+# Cria a pasta de downloads se não existir
 DOWNLOAD_FOLDER = "downloads"
 os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
 
@@ -15,7 +16,7 @@ def sanitize_filename(name):
     return re.sub(r'[\\/*?:"<>|]', "", name)
 
 def download_video(url):
-    print("🔧 Verificando ambiente...")
+    print("▶️ Iniciando download com yt-dlp")
     print("[yt-dlp version]", subprocess.getoutput("yt-dlp --version"))
     print("[ffmpeg version]", subprocess.getoutput("ffmpeg -version"))
 
@@ -24,14 +25,16 @@ def download_video(url):
 
     options = {
         'outtmpl': output_template,
-        'format': 'best',  # formato mais simples e compatível
+        'format': 'best',
         'noplaylist': True,
         'logger': yt_dlp.utils.std_logger(),
     }
 
     with yt_dlp.YoutubeDL(options) as ydl:
         info = ydl.extract_info(url, download=True)
-        return ydl.prepare_filename(info)
+        final_path = ydl.prepare_filename(info)
+        print("✅ Arquivo baixado com sucesso:", final_path)
+        return final_path
 
 @app.route('/')
 def index():
@@ -41,22 +44,24 @@ def index():
 def download():
     url = request.form.get('video_urls', '').strip()
 
+    print("📥 URL recebida:", url)
+
     if not url:
+        print("❌ Nenhum link foi enviado.")
         return "Nenhum link enviado.", 400
 
     try:
         video_path = download_video(url)
-        response = send_file(video_path, as_attachment=True)
-        # os.remove(video_path)  # opcional: apagar após download
-        return response
+        print("📁 Enviando arquivo:", video_path)
+        return send_file(video_path, as_attachment=True)
     except DownloadError as e:
-        print(f"[yt-dlp ERROR] {e}")
-        return "Erro: vídeo indisponível ou restrito.", 400
+        print("⚠️ Erro do yt-dlp:", e)
+        return "Erro: vídeo indisponível ou inválido.", 400
     except Exception as e:
-        print(f"[GENERIC ERROR] {e}")
+        print("❌ Erro inesperado:", e)
         return "Erro interno no servidor.", 500
 
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))
-    print(f"🚀 Rodando servidor Flask na porta {port}")
+    print(f"🚀 Servidor iniciado na porta {port}")
     app.run(host='0.0.0.0', port=port)

@@ -4,48 +4,36 @@ from yt_dlp.utils import DownloadError
 import os
 import re
 import uuid
+import subprocess
 
 app = Flask(__name__)
 
-# Pasta para salvar os vídeos baixados
+# Pasta para salvar vídeos
 DOWNLOAD_FOLDER = "downloads"
 os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
 
 def sanitize_filename(name):
-    # Remove caracteres inválidos para nomes de arquivos
     return re.sub(r'[\\/*?:"<>|]', "", name)
 
 def download_video(url):
-    # Primeiro baixa as informações para obter o título
-    ydl_opts_info = {}
-    with yt_dlp.YoutubeDL(ydl_opts_info) as ydl:
-        info = ydl.extract_info(url, download=False)
+    # Verificações de ambiente (aparecem nos logs do Render)
+    print("[yt-dlp version]", subprocess.getoutput("yt-dlp --version"))
+    print("[ffmpeg version]", subprocess.getoutput("ffmpeg -version"))
 
-    title = sanitize_filename(info.get('title', 'video'))
-
-    # Nome do arquivo com identificador único
+    # Gera nome único
     unique_id = str(uuid.uuid4())
-    output_template = os.path.join(DOWNLOAD_FOLDER, f"{title}_{unique_id}.%(ext)s")
+    output_template = os.path.join(DOWNLOAD_FOLDER, f"%(title)s_{unique_id}.%(ext)s")
 
     options = {
         'outtmpl': output_template,
-        'format': 'bv*+ba',  # Melhor vídeo + áudio
-        'writesubtitles': True,
-        'subtitleslangs': ['pt', 'en'],
-        'allsubtitles': True,
-        'subtitles': 'auto',
-        'skip_download': False,
-        # Remova ou mantenha se você realmente tiver um cookies.txt válido:
-        # 'cookiefile': 'cookies.txt',
-        'audioquality': 0,
+        'format': 'best',  # Usa o melhor formato disponível sem exigir ffmpeg
         'noplaylist': True,
+        'logger': yt_dlp.utils.std_logger(),
     }
 
     with yt_dlp.YoutubeDL(options) as ydl:
         info = ydl.extract_info(url, download=True)
-        downloaded_filename = ydl.prepare_filename(info)
-
-    return downloaded_filename
+        return ydl.prepare_filename(info)
 
 @app.route('/')
 def index():
@@ -58,23 +46,19 @@ def download():
     if not url:
         return "Nenhum link enviado.", 400
 
-    # Verificação simples de URL do YouTube
-    if not re.match(r'^https:\/\/(www\.)?youtube\.com\/watch\?v=', url):
-        return "Erro: URL inválida do YouTube.", 400
-
     try:
         video_path = download_video(url)
         response = send_file(video_path, as_attachment=True)
-
-        # (Opcional) Apaga o arquivo após envio
+        
+        # (Opcional) Apaga o arquivo após o envio
         # os.remove(video_path)
 
         return response
     except DownloadError as e:
-        print(f"[yt_dlp ERROR] {e}")
-        return "Erro: O vídeo está indisponível ou não pode ser baixado.", 400
+        print(f"[yt-dlp ERROR] {e}")
+        return "Erro ao baixar o vídeo. Ele pode estar indisponível ou com restrição.", 400
     except Exception as e:
-        print(f"[Unhandled ERROR] {e}")
+        print(f"[GENERIC ERROR] {e}")
         return "Erro interno no servidor.", 500
 
 if __name__ == "__main__":
